@@ -16,15 +16,7 @@ const LoginForm = () => {
       await login({ email, password });
       navigate('/');
     } catch (error) {
-      if (error.response) {
-        console.error('Login failed with response:', error.response.data);
-        console.error('Status code:', error.response.status);
-      } else if (error.request) {
-        console.error('No response received:', error.request);
-      } else {
-        console.error('Error setting up request:', error.message);
-      }
-      setError('Invalid email or password. Please try again.');
+      setError(error.response?.data?.message || 'Login failed. Please check your credentials and try again.');
     }
   };
 
