@@ -1,6 +1,6 @@
 # Kya Saabzi Frontend
 
-**Kya Saabzi** is a simple dish recommendation app that aims to solve your everyday problem of *"Aaj kya banau?"*  
+**Kya Saabzi** is a simple dish recommendation app that aims to solve your everyday problem of _"Aaj kya banau?"_
 
 ---
 
@@ -9,12 +9,14 @@
 Follow these steps to set up and run the frontend locally.
 
 ### Clone the Repository
+
 ```console
 git clone https://github.com/manav-gkmit/kya-saabzi-frontend.git
 cd kya-saabzi-frontend
 ```
 
 ### Install Dependencies
+
 ```console
 npm install
 ```
