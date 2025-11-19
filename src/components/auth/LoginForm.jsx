@@ -22,8 +22,7 @@ const LoginForm = ({ error, setError }) => {
       await login({ email, password });
       navigate("/");
     } catch (error) {
-      console.error("Login error:", error);
-      setError("Invalid email or password. Please try again.");
+      setError(error.response?.data?.message || 'Login failed. Please check your credentials and try again.');
     }
   };
 
