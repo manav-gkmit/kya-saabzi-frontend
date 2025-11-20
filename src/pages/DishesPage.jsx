@@ -20,7 +20,7 @@ const DishesPage = () => {
       setNewDishNote("");
       setSuccessMessage(`Successfully added dish: ${newDishName}`);
     } catch (err) {
-      setError(err.response.data.detail[0].msg??"Failed to add dish.");
+      setError(err.response.data.detail[0].msg ?? "Failed to add dish.");
       console.error(err);
     } finally {
       setLoading(false);

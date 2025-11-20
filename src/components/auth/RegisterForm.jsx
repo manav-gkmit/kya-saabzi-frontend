@@ -8,21 +8,41 @@ const RegisterForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { register } = useAuth();
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { emailError, validateEmail } = useValidation();
+  const { validateEmail, validatePassword } = useValidation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!validateEmail(email)) {
+    const emailValidationError = validateEmail(email);
+    if (emailValidationError) {
+      setError(emailValidationError);
       return;
     }
+    const passwordValidationError = validatePassword(password);
+    if (passwordValidationError) {
+      setError(passwordValidationError);
+      return;
+    }
+    setError(null);
 
     try {
       await register({ username, email, password });
-      navigate("/login");
+      navigate("/login", { state: { success: true } });
     } catch (error) {
-      console.error("Failed to register", error);
+      console.error(error);
+      if (error.response && error.response.data && error.response.data.detail) {
+        if (Array.isArray(error.response.data.detail)) {
+          const errorMessages = error.response.data.detail.map(err => err.msg).join(', ');
+          setError(errorMessages);
+        } else {
+          setError(error.response.data.detail);
+        }
+      } else if (error.message) {
+        setError(error.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
     }
   };
 
@@ -34,11 +54,11 @@ const RegisterForm = () => {
       <h2 className="text-2xl font-bold text-center text-green-700 mb-6">
         Register
       </h2>
-      {emailError && (
-        <p className="text-red-500 text-center mb-4">{emailError}</p>
+      {error && (
+        <p className="text-red-500 text-center mb-4">{error}</p>
       )}
       <div className="mb-4">
-        <label for="username">Username</label>
+        <label htmlFor="username">Username</label>
         <input
           type="text"
           placeholder="Username"
@@ -49,7 +69,7 @@ const RegisterForm = () => {
         />
       </div>
       <div className="mb-4">
-        <label for="email">Email</label>
+        <label htmlFor="email">Email</label>
         <input
           type="email"
           placeholder="user@example.com"
@@ -60,7 +80,7 @@ const RegisterForm = () => {
         />
       </div>
       <div className="mb-6">
-        <label for="password">Password</label>
+        <label htmlFor="password">Password</label>
         <input
           type="password"
           placeholder="Password"

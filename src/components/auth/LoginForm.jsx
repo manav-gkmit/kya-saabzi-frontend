@@ -8,13 +8,15 @@ const LoginForm = ({ error, setError }) => {
   const [password, setPassword] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { emailError, validateEmail } = useValidation();
+  const { validateEmail } = useValidation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    if (!validateEmail(email)) {
+    const emailValidationError = validateEmail(email);
+    if (emailValidationError) {
+      setError(emailValidationError);
       return;
     }
 
@@ -36,11 +38,8 @@ const LoginForm = ({ error, setError }) => {
         Login
       </h2>
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-      {emailError && (
-        <p className="text-red-500 text-center mb-4">{emailError}</p>
-      )}
       <div className="mb-4">
-        <label for="email">Email</label>
+        <label htmlFor="email">Email</label>
         <input
           type="email"
           placeholder="user@example.com"
@@ -51,7 +50,7 @@ const LoginForm = ({ error, setError }) => {
         />
       </div>
       <div className="mb-6">
-        <label for="password">Password</label>
+        <label htmlFor="password">Password</label>
         <input
           type="password"
           placeholder="Password"

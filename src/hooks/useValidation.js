@@ -1,21 +1,22 @@
-import { useState } from "react";
-
 const useValidation = () => {
-  const [emailError, setEmailError] = useState("");
-
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setEmailError("Invalid email format");
-      return false;
+      return "Invalid email format";
     }
-    setEmailError("");
-    return true;
+    return "";
+  };
+
+  const validatePassword = (password) => {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long";
+    }
+    return "";
   };
 
   return {
-    emailError,
     validateEmail,
+    validatePassword,
   };
 };
 

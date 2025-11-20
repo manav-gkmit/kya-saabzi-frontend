@@ -30,9 +30,13 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (credentials) => {
-    const { data } = await apiClient.post("/auth/login", credentials);
-    localStorage.setItem("jwt", data.access_token);
-    setToken(data.access_token);
+    try {
+      const { data } = await apiClient.post("/auth/login", credentials);
+      localStorage.setItem("jwt", data.access_token);
+      setToken(data.access_token);
+    } catch (error) {
+      throw error;
+    }
   };
 
   const register = async (userData) => {
