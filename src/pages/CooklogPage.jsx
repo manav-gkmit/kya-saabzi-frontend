@@ -38,7 +38,6 @@ const CooklogPage = () => {
     <div>
       <h1 className="text-3xl font-bold text-green-800 mb-6">My Cooklog</h1>
       {loading && <p>Loading cooklogs...</p>}
-      {error && <p className="text-red-500">{error}</p>}
       <div className="space-y-4">
         {cooklogs.length > 0 ? (
           cooklogs.map((log) => (
@@ -61,7 +60,7 @@ const CooklogPage = () => {
             </div>
           ))
         ) : (
-          <p>No cooklogs to display. Go add a dish!</p>
+          !loading && <p>No cooklogs to display. Go add a dish!</p>
         )}
       </div>
     </div>

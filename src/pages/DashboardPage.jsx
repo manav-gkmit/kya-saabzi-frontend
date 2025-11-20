@@ -24,7 +24,7 @@ const DashboardPage = () => {
             Recommendations
           </h2>
           <p className="text-gray-600 mb-4">
-            Get personalized dish recommendations.
+            Looking for what should I cook today?
           </p>
           <Link
             to="/recommendations"

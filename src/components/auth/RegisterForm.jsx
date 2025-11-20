@@ -38,6 +38,7 @@ const RegisterForm = () => {
         <p className="text-red-500 text-center mb-4">{emailError}</p>
       )}
       <div className="mb-4">
+        <label for="username">Username</label>
         <input
           type="text"
           placeholder="Username"
@@ -48,9 +49,10 @@ const RegisterForm = () => {
         />
       </div>
       <div className="mb-4">
+        <label for="email">Email</label>
         <input
           type="email"
-          placeholder="Email"
+          placeholder="user@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -58,6 +60,7 @@ const RegisterForm = () => {
         />
       </div>
       <div className="mb-6">
+        <label for="password">Password</label>
         <input
           type="password"
           placeholder="Password"

@@ -28,7 +28,7 @@ const DishCard = ({ dish }) => {
           {isExpanded && (
             <div className="mt-4 border-t pt-4">
               <h3 className="font-bold text-green-700 mb-2">
-                Community Insights
+                Notes
               </h3>
               <ul className="list-disc list-inside">
                 {dish.notes.map((note, index) => (
