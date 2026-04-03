@@ -1,1 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Outfit:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
+:root {
+  --color-base: #f8fafc;
+  --color-surface: #ffffff;
+  --color-text-main: #1e293b;
+  --color-text-muted: #64748b;
+  
+  --color-primary: #f43f5e;
+  --color-primary-light: #ffe4e6;
+  
+  --color-secondary: #0ea5e9;
+  --color-secondary-light: #e0f2fe;
+  
+  --color-accent: #d97706;
+  --color-accent-light: #fef3c7;
+  
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+  
+  --font-sans: "Nunito", sans-serif;
+  --font-display: "Outfit", sans-serif;
+}
+
+@theme {
+  --color-base: var(--color-base);
+  --color-surface: var(--color-surface);
+  --color-text-main: var(--color-text-main);
+  --color-text-muted: var(--color-text-muted);
+  
+  --color-primary: var(--color-primary);
+  --color-primary-light: var(--color-primary-light);
+  
+  --color-secondary: var(--color-secondary);
+  --color-secondary-light: var(--color-secondary-light);
+  
+  --color-accent: var(--color-accent);
+  --color-accent-light: var(--color-accent-light);
+  
+  --color-success: var(--color-success);
+  --color-success-light: var(--color-success-light);
+  
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+}
+
+body {
+  background-color: var(--color-base);
+  color: var(--color-text-main);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.soft-card {
+  background-color: var(--color-surface);
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.02);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(0,0,0,0.02);
+}
+
+.soft-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  font-family: var(--font-display);
+  font-weight: 600;
+  padding: 0.875rem 2rem;
+  border-radius: 9999px;
+  box-shadow: 0 8px 20px -6px rgba(244, 63, 94, 0.5);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px -6px rgba(244, 63, 94, 0.6);
+}
+
+.btn-primary:disabled {
+  background-color: var(--color-text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background-color: var(--color-surface);
+  color: var(--color-text-main);
+  font-family: var(--font-display);
+  font-weight: 600;
+  padding: 0.875rem 2rem;
+  border-radius: 9999px;
+  box-shadow: 0 4px 12px -4px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(0,0,0,0.05);
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px -4px rgba(0,0,0,0.12);
+}
+
+.input-soft {
+  width: 100%;
+  background-color: var(--color-base);
+  border: 2px solid transparent;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  font-size: 1rem;
+  font-family: var(--font-sans);
+  color: var(--color-text-main);
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.input-soft:focus {
+  background-color: var(--color-surface);
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 4px var(--color-secondary-light);
+}
+
+.input-soft::placeholder {
+  color: var(--color-text-muted);
+}
+
+.spell-fade-up {
+  opacity: 0;
+  transform: translateY(15px);
+  animation: fadeUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
