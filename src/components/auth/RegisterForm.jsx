@@ -27,8 +27,13 @@ const RegisterForm = () => {
       await register({ username, email, password, invite_code: inviteCode.trim() || null });
       navigate("/login");
     } catch (error) {
-      console.error("Failed to register", error);
-      setError(error.response?.data?.message || 'Registration failed. Please try again.');
+      console.error(error);
+      setError(
+        error.response?.data?.message ||
+          error.response?.data?.detail ||
+          (error instanceof Error ? error.message : JSON.stringify(error)) ||
+          "Registration failed"
+      );
     } finally {
       setLoading(false);
     }

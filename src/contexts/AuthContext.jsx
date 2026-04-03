@@ -16,7 +16,8 @@ export const AuthProvider = ({ children }) => {
       apiClient.defaults.headers.common['Authorization'] = `Bearer ${jwt}`;
       const { data } = await apiClient.get('/auth/me');
       setUser(data);
-    } catch {
+    } catch (err) {
+      console.error("Failed to fetch user profile, clearing session:", err);
       // Token is invalid/expired — clear it
       localStorage.removeItem('jwt');
       delete apiClient.defaults.headers.common['Authorization'];

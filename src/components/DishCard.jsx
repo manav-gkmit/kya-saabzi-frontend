@@ -1,14 +1,16 @@
 import { useState } from "react";
 
+const SCORE_MAX = 30; // Maximum possible score supplied by the backend
+
 const DishCard = ({ dish, isFeatured = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { dish: dishData, notes, score_breakdown } = dish;
+  const { dish: dishData, notes, score_breakdown } = dish || {};
 
-  if (!dishData) {
+  if (!dish || !dishData) {
     return (
       <div className="soft-card p-6 md:p-8 flex flex-col gap-2 spell-fade-up border-2 border-[var(--color-secondary-light)]">
-        <h3 className="font-display text-2xl font-bold text-[var(--color-text-main)]">{dish.name}</h3>
-        <p className="font-sans text-sm font-bold text-[var(--color-secondary)] uppercase tracking-wide">{dish.meal_type}</p>
+        <h3 className="font-display text-2xl font-bold text-[var(--color-text-main)]">{dish?.name || "Unknown Dish"}</h3>
+        <p className="font-sans text-sm font-bold text-[var(--color-secondary)] uppercase tracking-wide">{dish?.meal_type || "Meal"}</p>
       </div>
     );
   }
@@ -34,7 +36,7 @@ const DishCard = ({ dish, isFeatured = false }) => {
             </span>
             {score_breakdown && (
               <span className={`text-sm font-extrabold ${isFeatured ? "text-white/90" : "text-[var(--color-accent)]"}`}>
-                {((score_breakdown.total / 30) * 100).toFixed(0)}% Match
+                {((score_breakdown.total / SCORE_MAX) * 100).toFixed(0)}% Match
               </span>
             )}
           </div>

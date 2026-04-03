@@ -16,7 +16,7 @@ const FOOD_QUOTES = [
   { author: "Julia Child", text: "People who love to eat are always the best people." },
   { author: "Virginia Woolf", text: "One cannot think well, love well, sleep well, if one has not dined well." },
   { author: "J.R.R. Tolkien", text: "If more of us valued food and cheer and song above hoarded gold, it would be a merrier world." },
-  { author: "Ina Garten", text: "You can be miserable before a eat, a cookie, and then you can be a lot lower after." }
+  { author: "Ina Garten", text: "You can be miserable before you have a cookie, and you can be miserable after you eat a cookie, but you can never be miserable while you are eating a cookie." }
 ];
 
 const DashboardPage = () => {
@@ -41,8 +41,10 @@ const DashboardPage = () => {
           // Find most frequent dish
           const counts = {};
           data.forEach(log => {
-            const name = log.dish.name;
-            counts[name] = (counts[name] || 0) + 1;
+            const name = log.dish?.name;
+            if (name) {
+              counts[name] = (counts[name] || 0) + 1;
+            }
           });
           
           const favorite = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);

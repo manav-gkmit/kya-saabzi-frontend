@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { getMyHousehold, updateMyHousehold, getHouseholdMembers, joinHousehold } from "../api/services";
-import { useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
 const SettingsPage = () => {
@@ -14,7 +13,6 @@ const SettingsPage = () => {
   const [inviteCodeInput, setInviteCodeInput] = useState("");
   const [joining, setJoining] = useState(false);
   const [joinStatus, setJoinStatus] = useState("");
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   const isAdmin = user?.id === household?.admin_id;
@@ -215,7 +213,7 @@ const SettingsPage = () => {
                     handleLocalUpdate({ spice_level: levels[parseInt(e.target.value)] });
                   }}
                   disabled={!isAdmin}
-                  className={`w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-not-allowed accent-[var(--color-primary)] ${isAdmin ? "cursor-pointer" : "opacity-50"}`}
+                  className={`w-full h-3 bg-slate-200 rounded-lg appearance-none accent-[var(--color-primary)] ${isAdmin ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
                 />
                 <div className="flex justify-between text-xs font-bold text-slate-400 mt-3 uppercase tracking-wider">
                   <span>Mild</span>

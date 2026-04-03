@@ -72,6 +72,7 @@ const DishesPage = () => {
         err.message ??
         "Failed to save recipe.";
       setError(typeof message === "string" ? message : "Please double check your inputs.");
+      setTimeout(() => setError(null), 5000);
     } finally {
       setLoading(false);
     }
@@ -277,7 +278,13 @@ const DishesPage = () => {
       {/* Floating Notifications */}
       <div className="fixed top-8 left-1/2 -translate-x-1/2 flex flex-col gap-4 pointer-events-none z-[100] w-full max-w-md px-4">
         {error && (
-          <div className="bg-white px-6 py-4 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border-l-4 border-[var(--color-primary)] animate-in fade-in slide-in-from-top-4 pointer-events-auto w-full">
+          <div className="bg-white px-6 py-4 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border-l-4 border-[var(--color-primary)] animate-in fade-in slide-in-from-top-4 pointer-events-auto w-full relative">
+            <button 
+              onClick={() => setError(null)}
+              className="absolute top-3 right-3 w-8 h-8 rounded-full hover:bg-slate-50 flex items-center justify-center transition-colors group"
+            >
+              <svg className="w-4 h-4 text-slate-400 group-hover:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
             <span className="font-display font-bold text-[var(--color-text-main)] block mb-1">Could not save</span>
             <span className="font-sans text-sm font-medium text-[var(--color-text-muted)]">{error}</span>
           </div>
