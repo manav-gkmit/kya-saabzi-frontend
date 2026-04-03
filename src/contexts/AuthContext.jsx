@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import apiClient from '../api/axios';
 
 const AuthContext = createContext();
@@ -6,20 +6,44 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('jwt'));
+  const [isLoading, setIsLoading] = useState(!!localStorage.getItem('jwt'));
+  const hasFetchedUser = useRef(false);
 
+  // Fetch the real user profile from /auth/me
+  const fetchUserProfile = useCallback(async (jwt) => {
+    if (!jwt) return;
+    try {
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${jwt}`;
+      const { data } = await apiClient.get('/auth/me');
+      setUser(data);
+    } catch {
+      // Token is invalid/expired — clear it
+      localStorage.removeItem('jwt');
+      delete apiClient.defaults.headers.common['Authorization'];
+      setToken(null);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // On mount: rehydrate session from localStorage token
   useEffect(() => {
-    if (token) {
-      apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser({ username: 'testuser' });
-    } else {
+    if (token && !hasFetchedUser.current) {
+      hasFetchedUser.current = true;
+      fetchUserProfile(token);
+    } else if (!token) {
       delete apiClient.defaults.headers.common['Authorization'];
       setUser(null);
+      setIsLoading(false);
     }
-  }, [token]);
+  }, [token, fetchUserProfile]);
 
   const login = async (credentials) => {
     const { data } = await apiClient.post('/auth/login', credentials);
     localStorage.setItem('jwt', data.access_token);
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
+    setUser(data.user);
     setToken(data.access_token);
   };
 
@@ -29,11 +53,14 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('jwt');
+    delete apiClient.defaults.headers.common['Authorization'];
     setToken(null);
+    setUser(null);
+    hasFetchedUser.current = false;
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, token }}>
+    <AuthContext.Provider value={{ user, login, register, logout, token, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
