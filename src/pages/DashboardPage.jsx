@@ -33,8 +33,10 @@ const DashboardPage = () => {
 
     const fetchStats = async () => {
       try {
-        const { data } = await getMyCooklogs();
-        if (data && data.length > 0) {
+        const { data: rawData } = await getMyCooklogs();
+        const data = rawData ? rawData.filter(log => !log.deleted_at) : [];
+
+        if (data.length > 0) {
           // Count total
           const count = data.length;
           
@@ -47,9 +49,14 @@ const DashboardPage = () => {
             }
           });
           
-          const favorite = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+          const countKeys = Object.keys(counts);
+          const favorite = countKeys.length > 0 
+            ? countKeys.reduce((a, b) => counts[a] > counts[b] ? a : b)
+            : "—";
           
           setStats({ count, favorite });
+        } else {
+          setStats({ count: 0, favorite: "—" });
         }
       } catch (err) {
         console.error("Failed to fetch dashboard stats", err);

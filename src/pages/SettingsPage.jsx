@@ -67,6 +67,8 @@ const SettingsPage = () => {
       setLocalPrefs(hh.preferences || {});
       const { data: mems } = await getHouseholdMembers();
       setMembers(mems);
+      setIsDirty(false);
+      setStatus("");
     } catch (err) {
       setJoinStatus(err.response?.data?.detail || "Invalid invite code.");
     } finally {
@@ -128,9 +130,38 @@ const SettingsPage = () => {
       )}
 
       {!household ? (
-        <div className="soft-card p-8 bg-[var(--color-primary-light)] text-[var(--color-primary)] font-bold text-center border-none">
-          No family profile detected. Please complete setup.
-        </div>
+        <section className="soft-card p-10 bg-white border-2 border-dashed border-slate-200 flex flex-col gap-8 text-center items-center spell-fade-up">
+          <div className="w-20 h-20 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center shrink-0">
+             <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+          </div>
+          <div className="flex flex-col gap-3 max-w-md">
+            <h2 className="text-3xl font-display font-black text-[var(--color-text-main)] lowercase first-letter:uppercase">Join your family</h2>
+            <p className="font-sans text-lg text-[var(--color-text-muted)] font-medium">To personalize your experience, you need to be part of a household. Enter an invite code from a family member below.</p>
+          </div>
+          
+          <form onSubmit={handleJoin} className="flex flex-col gap-4 w-full max-w-sm">
+            <input
+              type="text"
+              maxLength={6}
+              placeholder="ENTER CODE"
+              value={inviteCodeInput}
+              onChange={(e) => setInviteCodeInput(e.target.value.toUpperCase())}
+              className="input-soft text-center font-display font-black tracking-widest text-3xl py-6"
+            />
+            <button 
+              type="submit"
+              disabled={joining || !inviteCodeInput}
+              className={`btn-primary py-5 text-lg font-bold w-full ${joining ? "opacity-50" : ""}`}
+            >
+              {joining ? "Joining Household..." : "Join Now"}
+            </button>
+            {joinStatus && (
+              <p className={`text-sm font-bold ${joinStatus.includes("Successfully") ? "text-[var(--color-success)]" : "text-[var(--color-primary)]"}`}>
+                {joinStatus}
+              </p>
+            )}
+          </form>
+        </section>
       ) : (
         <div className="flex flex-col gap-8">
           

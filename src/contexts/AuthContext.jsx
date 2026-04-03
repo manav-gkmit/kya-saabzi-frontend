@@ -17,12 +17,14 @@ export const AuthProvider = ({ children }) => {
       const { data } = await apiClient.get('/auth/me');
       setUser(data);
     } catch (err) {
-      console.error("Failed to fetch user profile, clearing session:", err);
-      // Token is invalid/expired — clear it
-      localStorage.removeItem('jwt');
-      delete apiClient.defaults.headers.common['Authorization'];
-      setToken(null);
-      setUser(null);
+      console.error("Failed to fetch user profile:", err);
+      // Only clear session if it's an authentication failure (401 or 403)
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('jwt');
+        delete apiClient.defaults.headers.common['Authorization'];
+        setToken(null);
+        setUser(null);
+      }
     } finally {
       setIsLoading(false);
     }

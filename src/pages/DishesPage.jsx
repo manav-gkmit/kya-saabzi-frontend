@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { addDish, searchDishes } from "../api/services";
 
 const DishesPage = () => {
@@ -18,18 +18,26 @@ const DishesPage = () => {
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
-      if (formData.name.trim().length > 2) {
+      const currentRequestId = ++requestIdRef.current;
+      const query = formData.name.trim();
+
+      if (query.length > 2) {
         setSearching(true);
         try {
-          const { data } = await searchDishes(formData.name);
-          setSearchResults(data);
+          const { data } = await searchDishes(query);
+          if (currentRequestId === requestIdRef.current) {
+            setSearchResults(data);
+          }
         } catch (err) {
           console.error("Search failed:", err);
         } finally {
-          setSearching(false);
+          if (currentRequestId === requestIdRef.current) {
+            setSearching(false);
+          }
         }
       } else {
         setSearchResults([]);
@@ -41,18 +49,21 @@ const DishesPage = () => {
 
   const handleAddDish = async (e) => {
     e.preventDefault();
-    if (!formData.name) return;
+    const trimmedName = formData.name?.trim();
+    if (!trimmedName) return;
+
     setLoading(true);
     setError(null);
     setSuccessMessage("");
     try {
       const payload = {
         ...formData,
+        name: trimmedName,
         prep_time_minutes: formData.prep_time_minutes === "" ? null : Number(formData.prep_time_minutes),
         calories_estimate: formData.calories_estimate === "" ? null : Number(formData.calories_estimate)
       };
       await addDish(payload);
-      setSuccessMessage(`Added successfully: ${formData.name}`);
+      setSuccessMessage(`Added successfully: ${trimmedName}`);
       setFormData({
         name: "",
         note: "",
