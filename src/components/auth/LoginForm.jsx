@@ -1,29 +1,43 @@
-import { useState } from 'react';
-import useAuth from '../../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import useAuth from "../../hooks/useAuth";
+import { Link, useNavigate } from "react-router-dom";
+import useValidation from "../../hooks/useValidation";
 
-const LoginForm = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
+const LoginForm = ({ error, setError }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { emailError, validateEmail } = useValidation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
+    if (!validateEmail(email)) {
+      return;
+    }
+
     try {
       await login({ email, password });
-      navigate('/');
+      navigate("/");
     } catch (error) {
       setError(error.response?.data?.message || 'Login failed. Please check your credentials and try again.');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md max-w-sm mx-auto mt-10">
-      <h2 className="text-2xl font-bold text-center text-green-700 mb-6">Login</h2>
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white p-6 rounded-lg shadow-md mx-auto mt-10"
+    >
+      <h2 className="text-2xl font-bold text-center text-green-700 mb-6">
+        Login
+      </h2>
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+      {emailError && (
+        <p className="text-red-500 text-center mb-4">{emailError}</p>
+      )}
       <div className="mb-4">
         <input
           type="email"
@@ -44,9 +58,18 @@ const LoginForm = () => {
           className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
         />
       </div>
-      <button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+      <button
+        type="submit"
+        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+      >
         Login
       </button>
+      <p className="text-center text-gray-600 mt-4">
+        Don't have an account?{" "}
+        <Link to="/register" className="text-green-600 hover:underline">
+          Register
+        </Link>
+      </p>
     </form>
   );
 };
