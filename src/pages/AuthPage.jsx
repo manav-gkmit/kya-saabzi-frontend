@@ -9,7 +9,7 @@ const AuthPage = () => {
   const [error, setError] = useState(null);
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
+    <div className="flex justify-center items-center min-h-screen w-full">
       {isLoginPage ? (
         <LoginForm setError={setError} error={error} />
       ) : (
