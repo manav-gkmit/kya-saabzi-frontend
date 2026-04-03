@@ -2,6 +2,11 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import AuthPage from '../pages/AuthPage';
 import PrivateRoute from '../utils/privateRoute.jsx';
 import App from '../App';
+import DashboardPage from '../pages/DashboardPage';
+import RecommendationsPage from '../pages/RecommendationsPage';
+import DishesPage from '../pages/DishesPage';
+import CooklogPage from '../pages/CooklogPage';
+import SettingsPage from '../pages/SettingsPage';
 
 const router = createBrowserRouter([
   {
@@ -21,7 +26,23 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <div></div>,
+            element: <DashboardPage />,
+          },
+          {
+            path: 'recommend',
+            element: <RecommendationsPage />,
+          },
+          {
+            path: 'dishes',
+            element: <DishesPage />,
+          },
+          {
+            path: 'cooklogs',
+            element: <CooklogPage />,
+          },
+          {
+            path: 'settings',
+            element: <SettingsPage />,
           },
         ],
       },
