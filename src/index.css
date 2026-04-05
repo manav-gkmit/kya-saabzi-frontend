@@ -44,6 +44,21 @@
   
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
+
+  --animate-spin-slow: spin 8s linear infinite;
+  --animate-shine: shine 3s infinite;
+  --animate-bounce-subtle: bounce-subtle 4s infinite linear;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) skewX(-15deg); opacity: 0; }
+  50% { opacity: 0.5; }
+  100% { transform: translateX(200%) skewX(-15deg); opacity: 0; }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 body {
