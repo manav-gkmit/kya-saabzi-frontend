@@ -2,6 +2,12 @@ import { useState, useEffect } from "react";
 import { getMyHousehold, updateMyHousehold, getHouseholdMembers, joinHousehold } from "../api/services";
 import useAuth from "../hooks/useAuth";
 
+const parseCsvList = (value) =>
+  value
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item !== "");
+
 const SettingsPage = () => {
   const [household, setHousehold] = useState(null);
   const [localPrefs, setLocalPrefs] = useState({});
@@ -13,6 +19,8 @@ const SettingsPage = () => {
   const [inviteCodeInput, setInviteCodeInput] = useState("");
   const [joining, setJoining] = useState(false);
   const [joinStatus, setJoinStatus] = useState("");
+  const [avoidIngredientsText, setAvoidIngredientsText] = useState("");
+  const [preferredCuisinesText, setPreferredCuisinesText] = useState("");
   const { user } = useAuth();
 
   const isAdmin = user?.id === household?.admin_id;
@@ -25,6 +33,8 @@ const SettingsPage = () => {
         if (!cancelled) {
           setHousehold(data);
           setLocalPrefs(data.preferences || {});
+          setAvoidIngredientsText((data.preferences?.avoid_ingredients || []).join(", "));
+          setPreferredCuisinesText((data.preferences?.preferred_cuisines || []).join(", "));
         }
       } catch (err) {
         console.error("Failed to fetch household", err);
@@ -65,6 +75,8 @@ const SettingsPage = () => {
       const { data: hh } = await getMyHousehold();
       setHousehold(hh);
       setLocalPrefs(hh.preferences || {});
+      setAvoidIngredientsText((hh.preferences?.avoid_ingredients || []).join(", "));
+      setPreferredCuisinesText((hh.preferences?.preferred_cuisines || []).join(", "));
       const { data: mems } = await getHouseholdMembers();
       setMembers(mems);
       setIsDirty(false);
@@ -81,9 +93,16 @@ const SettingsPage = () => {
     setSaving(true);
     setStatus("Saving...");
     try {
-      const { data } = await updateMyHousehold({ preferences: localPrefs });
+      const nextPrefs = {
+        ...localPrefs,
+        avoid_ingredients: parseCsvList(avoidIngredientsText),
+        preferred_cuisines: parseCsvList(preferredCuisinesText),
+      };
+      const { data } = await updateMyHousehold({ preferences: nextPrefs });
       setHousehold(data);
       setLocalPrefs(data.preferences || {});
+      setAvoidIngredientsText((data.preferences?.avoid_ingredients || []).join(", "));
+      setPreferredCuisinesText((data.preferences?.preferred_cuisines || []).join(", "));
       setIsDirty(false);
       setStatus("Preferences saved! ✨");
       setTimeout(() => setStatus(""), 3000);
@@ -293,9 +312,13 @@ const SettingsPage = () => {
               </div>
 
               {/* Repeat Toggle */}
-              <div 
-                onClick={() => isAdmin && handleLocalUpdate({ include_recently_cooked: !localPrefs.include_recently_cooked })}
-                className={`p-6 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${localPrefs.include_recently_cooked ? 'bg-[var(--color-accent-light)] border-[var(--color-accent)]' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}
+              <button
+                type="button"
+                onClick={() => handleLocalUpdate({ include_recently_cooked: !localPrefs.include_recently_cooked })}
+                aria-pressed={!!localPrefs.include_recently_cooked}
+                aria-label="Repeat any dish"
+                disabled={!isAdmin}
+                className={`p-6 rounded-2xl border-2 transition-all flex items-center justify-between text-left ${localPrefs.include_recently_cooked ? 'bg-[var(--color-accent-light)] border-[var(--color-accent)]' : 'bg-slate-50 border-transparent hover:border-slate-200'} ${isAdmin ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2' : 'cursor-not-allowed opacity-60'}`}
               >
                 <div className="flex flex-col gap-1">
                   <span className={`font-display font-bold text-lg ${localPrefs.include_recently_cooked ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-main)]'}`}>Repeat Any Dish?</span>
@@ -304,7 +327,7 @@ const SettingsPage = () => {
                 <div className={`w-14 h-8 rounded-full relative transition-colors ${localPrefs.include_recently_cooked ? 'bg-[var(--color-accent)]' : 'bg-slate-300'}`}>
                    <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-sm ${localPrefs.include_recently_cooked ? 'left-7' : 'left-1'}`}></div>
                 </div>
-              </div>
+              </button>
 
             </div>
           </section>
@@ -322,11 +345,11 @@ const SettingsPage = () => {
                 <textarea
                   className="input-soft min-h-[80px] font-sans text-base py-3 px-4"
                   placeholder="Peanuts, Mushrooms, Shrimp..."
-                  value={(localPrefs.avoid_ingredients || []).join(", ")}
-                  onChange={(e) => {
+                  value={avoidIngredientsText}
+                  onChange={(e) => setAvoidIngredientsText(e.target.value)}
+                  onBlur={() => {
                     if (!isAdmin) return;
-                    const items = e.target.value.split(",").map(i => i.trim()).filter(i => i !== "");
-                    handleLocalUpdate({ avoid_ingredients: items });
+                    handleLocalUpdate({ avoid_ingredients: parseCsvList(avoidIngredientsText) });
                   }}
                   disabled={!isAdmin}
                 />
@@ -338,11 +361,11 @@ const SettingsPage = () => {
                 <textarea
                   className="input-soft min-h-[80px] font-sans text-base py-3 px-4"
                   placeholder="Indian, Mediterranean, Thai..."
-                  value={(localPrefs.preferred_cuisines || []).join(", ")}
-                  onChange={(e) => {
+                  value={preferredCuisinesText}
+                  onChange={(e) => setPreferredCuisinesText(e.target.value)}
+                  onBlur={() => {
                     if (!isAdmin) return;
-                    const items = e.target.value.split(",").map(i => i.trim()).filter(i => i !== "");
-                    handleLocalUpdate({ preferred_cuisines: items });
+                    handleLocalUpdate({ preferred_cuisines: parseCsvList(preferredCuisinesText) });
                   }}
                   disabled={!isAdmin}
                 />
@@ -425,8 +448,8 @@ const SettingsPage = () => {
 
           {/* Save Action */}
           <div className="flex flex-col sm:flex-row justify-between items-center pt-4 gap-4">
-            <span className={`font-sans text-sm font-bold px-4 py-2 rounded-lg ${status.includes("Saved") ? "bg-[var(--color-success-light)] text-[var(--color-success)]" :
-                status.includes("Fail") ? "bg-[var(--color-primary-light)] text-[var(--color-primary)]" :
+            <span className={`font-sans text-sm font-bold px-4 py-2 rounded-lg ${status.toLowerCase().includes("saved") ? "bg-[var(--color-success-light)] text-[var(--color-success)]" :
+                status.toLowerCase().includes("fail") ? "bg-[var(--color-primary-light)] text-[var(--color-primary)]" :
                   isDirty ? "bg-[var(--color-accent-light)] text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"
               }`}>
               {status || (isDirty ? "● Unsaved changes" : "All up to date ✨")}

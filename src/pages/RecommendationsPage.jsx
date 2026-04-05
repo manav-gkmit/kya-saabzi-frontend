@@ -1,36 +1,24 @@
 import { useState, useEffect } from "react";
 import { getRecommendations, getMyHousehold } from "../api/services";
 import DishCard from "../components/DishCard";
-
-const getCurrentMealType = () => {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 11) return "breakfast";
-  if (hour >= 11 && hour < 16) return "lunch";
-  if (hour >= 16 && hour < 19) return "snack";
-  return "dinner";
-};
+import { getCurrentMealType } from "../utils/mealType";
 
 const RecommendationsPage = () => {
   const [recommendations, setRecommendations] = useState([]);
   const [household, setHousehold] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const currentMealTypeRequested = getCurrentMealType();
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
-      try {
-        const currentMealType = getCurrentMealType();
-        const [recoRes, hhRes] = await Promise.all([
-          getRecommendations(currentMealType),
-          getMyHousehold()
-        ]);
-        
+      try {        
+        const recoRes = await getRecommendations(currentMealTypeRequested);
         const recoData = recoRes.data;
         const recommendationsArray = Array.isArray(recoData) ? recoData : [recoData];
         setRecommendations(recommendationsArray);
-        setHousehold(hhRes.data);
       } catch (err) {
         if (err.response?.status === 404) {
           setError("No recommendations found for this meal time. Try adding more dishes or logging some cooks!");
@@ -38,15 +26,21 @@ const RecommendationsPage = () => {
           setError("Unable to retrieve recommendations right now.");
         }
         console.error(err);
+      }
+
+      try {
+        const hhRes = await getMyHousehold();
+        setHousehold(hhRes.data);
+      } catch (err) {
+        console.error("Unable to retrieve household right now.", err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [currentMealTypeRequested]);
 
-  const mealType = getCurrentMealType();
   const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
   
   const prefs = household?.preferences || {};
@@ -71,17 +65,17 @@ const RecommendationsPage = () => {
           )}
         </div>
         <h1 className="text-5xl md:text-7xl font-display font-black text-[var(--color-text-main)] tracking-tight mt-3 leading-[0.95]">
-          {mealType ? (
+          {currentMealTypeRequested ? (
             <>
-              Today's <span className="text-[var(--color-primary)]">{capitalize(mealType)}</span>
+              Today's <span className="text-[var(--color-primary)]">{capitalize(currentMealTypeRequested)}</span>
             </>
           ) : (
             "Today's Special"
           )}
         </h1>
         <p className="font-sans text-xl text-[var(--color-text-muted)] font-semibold max-w-2xl mx-auto md:mx-0 leading-relaxed opacity-80">
-          {mealType 
-            ? `Hand-picked ${mealType} suggestions tailored for your household, balancing your recent favorites with fresh variety.`
+          {currentMealTypeRequested 
+            ? `Hand-picked ${currentMealTypeRequested} suggestions tailored for your household, balancing your recent favorites with fresh variety.`
             : "Carefully chosen suggestions based on what your family loves, balancing comfort with a bit of variety."
           }
         </p>

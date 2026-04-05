@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import useAuth from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 import { getMyCooklogs } from "../api/services";
+import { getCurrentMealType } from "../utils/mealType";
 
 const KITCHEN_TIPS = [
   { title: "Batch Cooking Tip", text: "Cook twice as much rice today and use the leftovers for fried rice tomorrow. It saves time and energy!" },
@@ -76,15 +77,7 @@ const DashboardPage = () => {
     return "Good Late Night";
   };
 
-  const getMealType = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 11) return "breakfast";
-    if (hour >= 11 && hour < 16) return "lunch";
-    if (hour >= 16 && hour < 19) return "snack";
-    return "dinner";
-  };
-
-  const mealType = getMealType();
+  const mealType = getCurrentMealType();
   const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
 
   return (
