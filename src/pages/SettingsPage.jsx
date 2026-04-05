@@ -2,6 +2,12 @@ import { useState, useEffect } from "react";
 import { getMyHousehold, updateMyHousehold, getHouseholdMembers, joinHousehold } from "../api/services";
 import useAuth from "../hooks/useAuth";
 
+const parseCsvList = (value) =>
+  value
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item !== "");
+
 const SettingsPage = () => {
   const [household, setHousehold] = useState(null);
   const [localPrefs, setLocalPrefs] = useState({});
@@ -13,6 +19,8 @@ const SettingsPage = () => {
   const [inviteCodeInput, setInviteCodeInput] = useState("");
   const [joining, setJoining] = useState(false);
   const [joinStatus, setJoinStatus] = useState("");
+  const [avoidIngredientsText, setAvoidIngredientsText] = useState("");
+  const [preferredCuisinesText, setPreferredCuisinesText] = useState("");
   const { user } = useAuth();
 
   const isAdmin = user?.id === household?.admin_id;
@@ -25,6 +33,8 @@ const SettingsPage = () => {
         if (!cancelled) {
           setHousehold(data);
           setLocalPrefs(data.preferences || {});
+          setAvoidIngredientsText((data.preferences?.avoid_ingredients || []).join(", "));
+          setPreferredCuisinesText((data.preferences?.preferred_cuisines || []).join(", "));
         }
       } catch (err) {
         console.error("Failed to fetch household", err);
@@ -65,6 +75,8 @@ const SettingsPage = () => {
       const { data: hh } = await getMyHousehold();
       setHousehold(hh);
       setLocalPrefs(hh.preferences || {});
+      setAvoidIngredientsText((hh.preferences?.avoid_ingredients || []).join(", "));
+      setPreferredCuisinesText((hh.preferences?.preferred_cuisines || []).join(", "));
       const { data: mems } = await getHouseholdMembers();
       setMembers(mems);
       setIsDirty(false);
@@ -81,9 +93,16 @@ const SettingsPage = () => {
     setSaving(true);
     setStatus("Saving...");
     try {
-      const { data } = await updateMyHousehold({ preferences: localPrefs });
+      const nextPrefs = {
+        ...localPrefs,
+        avoid_ingredients: parseCsvList(avoidIngredientsText),
+        preferred_cuisines: parseCsvList(preferredCuisinesText),
+      };
+      const { data } = await updateMyHousehold({ preferences: nextPrefs });
       setHousehold(data);
       setLocalPrefs(data.preferences || {});
+      setAvoidIngredientsText((data.preferences?.avoid_ingredients || []).join(", "));
+      setPreferredCuisinesText((data.preferences?.preferred_cuisines || []).join(", "));
       setIsDirty(false);
       setStatus("Preferences saved! ✨");
       setTimeout(() => setStatus(""), 3000);
@@ -104,7 +123,7 @@ const SettingsPage = () => {
 
   return (
     <div className="flex flex-col gap-10 py-8 md:py-16 max-w-3xl mx-auto spell-fade-up">
-      
+
       {/* Friendly Header */}
       <div className="flex flex-col gap-3 text-center md:text-left">
         <div className="inline-flex items-center gap-2 bg-[var(--color-secondary-light)] text-[var(--color-secondary)] px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-wide w-fit mx-auto md:mx-0">
@@ -132,13 +151,13 @@ const SettingsPage = () => {
       {!household ? (
         <section className="soft-card p-10 bg-white border-2 border-dashed border-slate-200 flex flex-col gap-8 text-center items-center spell-fade-up">
           <div className="w-20 h-20 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center shrink-0">
-             <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
           </div>
           <div className="flex flex-col gap-3 max-w-md">
             <h2 className="text-3xl font-display font-black text-[var(--color-text-main)] lowercase first-letter:uppercase">Join your family</h2>
             <p className="font-sans text-lg text-[var(--color-text-muted)] font-medium">To personalize your experience, you need to be part of a household. Enter an invite code from a family member below.</p>
           </div>
-          
+
           <form onSubmit={handleJoin} className="flex flex-col gap-4 w-full max-w-sm">
             <input
               type="text"
@@ -148,7 +167,7 @@ const SettingsPage = () => {
               onChange={(e) => setInviteCodeInput(e.target.value.toUpperCase())}
               className="input-soft text-center font-display font-black tracking-widest text-3xl py-6"
             />
-            <button 
+            <button
               type="submit"
               disabled={joining || !inviteCodeInput}
               className={`btn-primary py-5 text-lg font-bold w-full ${joining ? "opacity-50" : ""}`}
@@ -164,22 +183,21 @@ const SettingsPage = () => {
         </section>
       ) : (
         <div className="flex flex-col gap-8">
-          
+
           {/* Dietary Choices */}
           <section className="soft-card p-6 md:p-8 flex flex-col gap-6">
             <h2 className="text-2xl font-display font-bold text-[var(--color-text-main)] flex items-center gap-2 border-b border-slate-100 pb-4">
               Dietary choices
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
+
               <button
                 onClick={() => isAdmin && handleLocalUpdate({ is_vegetarian: !localPrefs.is_vegetarian })}
                 disabled={!isAdmin}
-                className={`p-6 rounded-2xl text-left transition-all duration-300 border-2 ${
-                  localPrefs.is_vegetarian 
-                    ? "bg-[var(--color-success-light)] border-[var(--color-success)] shadow-md" 
+                className={`p-6 rounded-2xl text-left transition-all duration-300 border-2 ${localPrefs.is_vegetarian
+                    ? "bg-[var(--color-success-light)] border-[var(--color-success)] shadow-md"
                     : "bg-slate-50 border-transparent hover:border-slate-200 hover:bg-slate-100"
-                }`}
+                  }`}
               >
                 <div className="flex justify-between items-start mb-2">
                   <span className={`font-display font-bold text-lg ${localPrefs.is_vegetarian ? "text-[var(--color-success)]" : "text-[var(--color-text-main)]"}`}>Vegetarian</span>
@@ -195,11 +213,10 @@ const SettingsPage = () => {
               <button
                 onClick={() => isAdmin && handleLocalUpdate({ vegan: !localPrefs.vegan })}
                 disabled={!isAdmin}
-                className={`p-6 rounded-2xl text-left transition-all duration-300 border-2 ${
-                  localPrefs.vegan 
-                    ? "bg-[var(--color-success-light)] border-[var(--color-success)] shadow-md" 
+                className={`p-6 rounded-2xl text-left transition-all duration-300 border-2 ${localPrefs.vegan
+                    ? "bg-[var(--color-success-light)] border-[var(--color-success)] shadow-md"
                     : "bg-slate-50 border-transparent hover:border-slate-200 hover:bg-slate-100"
-                }`}
+                  }`}
               >
                 <div className="flex justify-between items-start mb-2">
                   <span className={`font-display font-bold text-lg ${localPrefs.vegan ? "text-[var(--color-success)]" : "text-[var(--color-text-main)]"}`}>Plant-Based</span>
@@ -230,7 +247,7 @@ const SettingsPage = () => {
                   {localPrefs.spice_level || "Medium"}
                 </span>
               </div>
-              
+
               <div className="pt-4 pb-2 px-2">
                 <input
                   type="range"
@@ -255,17 +272,119 @@ const SettingsPage = () => {
             </div>
           </section>
 
+          {/* Kitchen Smarts */}
+          <section className="soft-card p-6 md:p-8 flex flex-col gap-6">
+            <h2 className="text-2xl font-display font-bold text-[var(--color-text-main)] flex items-center gap-2 border-b border-slate-100 pb-4">
+              Kitchen Smarts
+            </h2>
+            <div className="flex flex-col gap-6">
+              
+              {/* Variety Gap Slider */}
+              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col gap-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex flex-col">
+                    <span className="font-display font-bold text-lg text-[var(--color-text-main)]">Variety Gap</span>
+                    <span className="font-sans text-sm font-medium text-[var(--color-text-muted)]">Wait time before suggesting the same dish again.</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="font-display text-2xl font-black text-[var(--color-primary)] leading-none">
+                      {localPrefs.recommendation_window_days || 6}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Days</span>
+                  </div>
+                </div>
+                <div className="px-2">
+                  <input
+                    type="range"
+                    min="1"
+                    max="14"
+                    step="1"
+                    value={localPrefs.recommendation_window_days || 6}
+                    onChange={(e) => isAdmin && handleLocalUpdate({ recommendation_window_days: parseInt(e.target.value) })}
+                    disabled={!isAdmin}
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none accent-[var(--color-primary)] cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-tighter">
+                    <span>Quick Repeat (1d)</span>
+                    <span>High Variety (14d)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Repeat Toggle */}
+              <button
+                type="button"
+                onClick={() => handleLocalUpdate({ include_recently_cooked: !localPrefs.include_recently_cooked })}
+                aria-pressed={!!localPrefs.include_recently_cooked}
+                aria-label="Repeat any dish"
+                disabled={!isAdmin}
+                className={`p-6 rounded-2xl border-2 transition-all flex items-center justify-between text-left ${localPrefs.include_recently_cooked ? 'bg-[var(--color-accent-light)] border-[var(--color-accent)]' : 'bg-slate-50 border-transparent hover:border-slate-200'} ${isAdmin ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2' : 'cursor-not-allowed opacity-60'}`}
+              >
+                <div className="flex flex-col gap-1">
+                  <span className={`font-display font-bold text-lg ${localPrefs.include_recently_cooked ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-main)]'}`}>Repeat Any Dish?</span>
+                  <p className="font-sans text-sm font-medium text-[var(--color-text-muted)]">Ignore wait times and suggest anything from your archive.</p>
+                </div>
+                <div className={`w-14 h-8 rounded-full relative transition-colors ${localPrefs.include_recently_cooked ? 'bg-[var(--color-accent)]' : 'bg-slate-300'}`}>
+                   <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-sm ${localPrefs.include_recently_cooked ? 'left-7' : 'left-1'}`}></div>
+                </div>
+              </button>
+
+            </div>
+          </section>
+
+          {/* Ingredient Strategy */}
+          <section className="soft-card p-6 md:p-8 flex flex-col gap-6">
+            <h2 className="text-2xl font-display font-bold text-[var(--color-text-main)] flex items-center gap-2 border-b border-slate-100 pb-4">
+              Ingredient Strategy
+            </h2>
+            <div className="flex flex-col gap-6">
+              
+              <div className="flex flex-col gap-2">
+                <label className="font-display font-bold text-sm text-[var(--color-text-main)] uppercase tracking-wide">Avoid Ingredients</label>
+                <p className="font-sans text-xs text-[var(--color-text-muted)] mb-1">Separate specific ingredients to exclude with commas (e.g. Peanut, Cilantro, Mushroooms).</p>
+                <textarea
+                  className="input-soft min-h-[80px] font-sans text-base py-3 px-4"
+                  placeholder="Peanuts, Mushrooms, Shrimp..."
+                  value={avoidIngredientsText}
+                  onChange={(e) => setAvoidIngredientsText(e.target.value)}
+                  onBlur={() => {
+                    if (!isAdmin) return;
+                    handleLocalUpdate({ avoid_ingredients: parseCsvList(avoidIngredientsText) });
+                  }}
+                  disabled={!isAdmin}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="font-display font-bold text-sm text-[var(--color-text-main)] uppercase tracking-wide">Preferred Cuisines</label>
+                <p className="font-sans text-xs text-[var(--color-text-muted)] mb-1">Cuisines your family loves (e.g. Indian, Chinese, Italian).</p>
+                <textarea
+                  className="input-soft min-h-[80px] font-sans text-base py-3 px-4"
+                  placeholder="Indian, Mediterranean, Thai..."
+                  value={preferredCuisinesText}
+                  onChange={(e) => setPreferredCuisinesText(e.target.value)}
+                  onBlur={() => {
+                    if (!isAdmin) return;
+                    handleLocalUpdate({ preferred_cuisines: parseCsvList(preferredCuisinesText) });
+                  }}
+                  disabled={!isAdmin}
+                />
+              </div>
+
+            </div>
+          </section>
+
           {/* Household Management */}
           <section className="soft-card p-6 md:p-8 flex flex-col gap-8 bg-white overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-accent-light)] opacity-20 rounded-bl-full -mr-10 -mt-10"></div>
-            
+
             <div className="flex flex-col gap-2 relative z-10">
               <h2 className="text-2xl font-display font-bold text-[var(--color-text-main)]">Household Management</h2>
               <p className="font-sans text-sm text-[var(--color-text-muted)] font-medium">Invite family members or join an existing household.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-              
+
               {/* Share Code */}
               <div className="flex flex-col gap-4">
                 <label className="font-display font-bold text-sm text-text-main opacity-80 uppercase tracking-wide">Your Invite Code</label>
@@ -291,7 +410,7 @@ const SettingsPage = () => {
                     onChange={(e) => setInviteCodeInput(e.target.value.toUpperCase())}
                     className="input-soft text-center font-display font-black tracking-widest text-2xl"
                   />
-                  <button 
+                  <button
                     type="submit"
                     disabled={joining || !inviteCodeInput}
                     className={`btn-secondary py-3 text-sm font-bold w-full ${joining ? "opacity-50" : ""}`}
@@ -329,14 +448,13 @@ const SettingsPage = () => {
 
           {/* Save Action */}
           <div className="flex flex-col sm:flex-row justify-between items-center pt-4 gap-4">
-            <span className={`font-sans text-sm font-bold px-4 py-2 rounded-lg ${
-              status.includes("Saved") ? "bg-[var(--color-success-light)] text-[var(--color-success)]" :
-              status.includes("Fail") ? "bg-[var(--color-primary-light)] text-[var(--color-primary)]" :
-              isDirty ? "bg-[var(--color-accent-light)] text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"
-            }`}>
+            <span className={`font-sans text-sm font-bold px-4 py-2 rounded-lg ${status.toLowerCase().includes("saved") ? "bg-[var(--color-success-light)] text-[var(--color-success)]" :
+                status.toLowerCase().includes("fail") ? "bg-[var(--color-primary-light)] text-[var(--color-primary)]" :
+                  isDirty ? "bg-[var(--color-accent-light)] text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"
+              }`}>
               {status || (isDirty ? "● Unsaved changes" : "All up to date ✨")}
             </span>
-            
+
             <button
               onClick={handleSeal}
               disabled={!isDirty || saving || !isAdmin}
@@ -345,7 +463,7 @@ const SettingsPage = () => {
               {saving ? "Saving..." : "Save Preferences"}
             </button>
           </div>
-          
+
         </div>
       )}
     </div>

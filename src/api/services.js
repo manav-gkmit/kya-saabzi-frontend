@@ -36,6 +36,8 @@ export const joinHousehold = (inviteCode) => {
 };
 
 // Recommendations
-export const getRecommendations = () => {
-  return apiClient.get("/recommend/");
+export const getRecommendations = (mealType) => {
+  return apiClient.get("/recommend/", {
+    params: mealType ? { meal_type: mealType } : {},
+  });
 };
