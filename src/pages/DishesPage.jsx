@@ -22,6 +22,7 @@ const DishesPage = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const requestIdRef = useRef(0);
+  const controllerRef = useRef(null);
   const searchBoxRef = useRef(null);
   const skipNextSearchRef = useRef(false);
 
@@ -40,6 +41,11 @@ const DishesPage = () => {
   }, []);
 
   useEffect(() => {
+    const currentRequestId = ++requestIdRef.current;
+    controllerRef.current?.abort();
+    controllerRef.current = new AbortController();
+    const signal = controllerRef.current.signal;
+
     const query = formData.name.trim();
 
     if (skipNextSearchRef.current) {
@@ -50,19 +56,16 @@ const DishesPage = () => {
     }
 
     if (query.length < MIN_SEARCH_LENGTH) {
-      requestIdRef.current += 1;
       setSearching(false);
       setSearchResults([]);
       return undefined;
     }
 
-    const controller = new AbortController();
     const timer = setTimeout(async () => {
-      const currentRequestId = ++requestIdRef.current;
       setSearching(true);
 
       try {
-        const { data } = await searchDishes(query, controller.signal);
+        const { data } = await searchDishes(query, signal);
         if (currentRequestId === requestIdRef.current) {
           setSearchResults(data);
         }
@@ -79,7 +82,7 @@ const DishesPage = () => {
 
     return () => {
       clearTimeout(timer);
-      controller.abort();
+      // Abort is already handled at the start of the next effect via controllerRef
     };
   }, [formData.name]);
 
