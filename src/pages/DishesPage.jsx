@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { addDish, searchDishes } from "../api/services";
 
+const MIN_SEARCH_LENGTH = 3;
+const SEARCH_DEBOUNCE_MS = 400;
+
 const DishesPage = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -19,7 +22,9 @@ const DishesPage = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const requestIdRef = useRef(0);
+  const controllerRef = useRef(null);
   const searchBoxRef = useRef(null);
+  const skipNextSearchRef = useRef(false);
 
   useEffect(() => {
     const handlePointerDown = (event) => {
@@ -36,30 +41,49 @@ const DishesPage = () => {
   }, []);
 
   useEffect(() => {
+    const currentRequestId = ++requestIdRef.current;
+    controllerRef.current?.abort();
+    controllerRef.current = new AbortController();
+    const signal = controllerRef.current.signal;
+
+    const query = formData.name.trim();
+
+    if (skipNextSearchRef.current) {
+      skipNextSearchRef.current = false;
+      setSearching(false);
+      setSearchResults([]);
+      return undefined;
+    }
+
+    if (query.length < MIN_SEARCH_LENGTH) {
+      setSearching(false);
+      setSearchResults([]);
+      return undefined;
+    }
+
     const timer = setTimeout(async () => {
-      const currentRequestId = ++requestIdRef.current;
-      const query = formData.name.trim();
+      setSearching(true);
 
-      if (query.length > 2) {
-        setSearching(true);
-        try {
-          const { data } = await searchDishes(query);
-          if (currentRequestId === requestIdRef.current) {
-            setSearchResults(data);
-          }
-        } catch (err) {
-          console.error("Search failed:", err);
-        } finally {
-          if (currentRequestId === requestIdRef.current) {
-            setSearching(false);
-          }
+      try {
+        const { data } = await searchDishes(query, signal);
+        if (currentRequestId === requestIdRef.current) {
+          setSearchResults(data);
         }
-      } else {
-        setSearchResults([]);
+      } catch (err) {
+        if (err.name !== "CanceledError" && err.name !== "AbortError") {
+          console.error("Search failed:", err);
+        }
+      } finally {
+        if (currentRequestId === requestIdRef.current) {
+          setSearching(false);
+        }
       }
-    }, 500);
+    }, SEARCH_DEBOUNCE_MS);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      // Abort is already handled at the start of the next effect via controllerRef
+    };
   }, [formData.name]);
 
   const handleAddDish = async (e) => {
@@ -153,6 +177,7 @@ const DishesPage = () => {
                     key={match.id}
                     type="button"
                     onClick={() => {
+                      skipNextSearchRef.current = true;
                       updateField("name", match.name);
                       setSearchResults([]);
                     }}
