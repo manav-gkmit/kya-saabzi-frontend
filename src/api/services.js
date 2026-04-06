@@ -5,8 +5,11 @@ export const addDish = (dishData) => {
   return apiClient.post("/dishes/", dishData);
 };
 
-export const searchDishes = (q) => {
-  return apiClient.get('/dishes/search', { params: { q } });
+export const searchDishes = (q, signal) => {
+  return apiClient.get("/dishes/search", {
+    params: { q },
+    signal,
+  });
 };
 
 // Cooklogs
