@@ -238,7 +238,9 @@ const DashboardPage = () => {
         <div className="bg-[var(--color-primary)] p-8 rounded-3xl flex flex-col gap-4 text-white shadow-xl shadow-rose-200">
           <h4 className="font-display font-black text-2xl tracking-tight">Cook something new?</h4>
           <p className="font-sans text-sm font-medium opacity-90 leading-relaxed italic">"{dailyQuote.text}" - {dailyQuote.author}</p>
-          <Link to="/dishes" className="mt-2 bg-white text-[var(--color-primary)] font-black py-4 px-8 rounded-2xl text-center hover:bg-[var(--color-primary-light)] transition-colors">Log Recipe Now</Link>
+          <p className="mt-2 font-sans text-sm font-semibold uppercase tracking-[0.18em] text-white/75">
+            Let the next meal be worth remembering
+          </p>
         </div>
       </div>
 

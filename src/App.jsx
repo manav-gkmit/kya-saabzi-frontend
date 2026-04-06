@@ -20,21 +20,24 @@ function App() {
                 Kya Saabzi
               </span>
             </Link>
-            
-            <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 font-sans text-sm font-semibold text-[var(--color-text-muted)]">
-              <Link to="/recommend" className="hover:text-[var(--color-primary)] transition-colors">Daily Menu</Link>
-              <Link to="/dishes" className="hover:text-[var(--color-primary)] transition-colors">Log Dish</Link>
-              <Link to="/cooklogs" className="hover:text-[var(--color-primary)] transition-colors">Archive</Link>
-              
+
+            <div className="hidden md:flex items-center justify-center px-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-primary)]/10 bg-[var(--color-primary-light)]/55 px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)] shadow-sm">
+                <span className="h-2 w-2 rounded-full bg-[var(--color-primary)]"></span>
+                Family meal planning, without the clutter
+              </div>
+            </div>
+
+            <div className="flex flex-wrap justify-center items-center gap-4 font-sans text-sm font-semibold text-[var(--color-text-muted)]">
               {user ? (
-                <button 
-                  onClick={logout} 
+                <button
+                  onClick={logout}
                   className="px-4 py-2 hover:bg-slate-100 rounded-full transition-all text-slate-500"
                 >
                   Sign out
                 </button>
               ) : (
-                <div className="flex gap-4 items-center pl-4 border-l border-slate-200">
+                <div className="flex gap-4 items-center">
                   <Link to="/login" className="hover:text-[var(--color-text-main)] transition-colors">Log in</Link>
                   <Link to="/register" className="btn-primary py-2 px-5 text-sm">Sign up free</Link>
                 </div>
