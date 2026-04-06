@@ -19,6 +19,21 @@ const DishesPage = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const requestIdRef = useRef(0);
+  const searchBoxRef = useRef(null);
+
+  useEffect(() => {
+    const handlePointerDown = (event) => {
+      if (!searchBoxRef.current?.contains(event.target)) {
+        setSearchResults([]);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+    };
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -114,7 +129,7 @@ const DishesPage = () => {
         {/* Core Identity */}
         <section className="soft-card p-6 md:p-8 flex flex-col gap-6 relative z-20">
           <label className="font-display font-bold text-sm text-text-main opacity-80 uppercase tracking-wide">What's the recipe?</label>
-          <div className="relative">
+          <div ref={searchBoxRef} className="relative">
             <input
               type="text"
               placeholder="E.g., Creamy Tomato Soup"
@@ -126,7 +141,10 @@ const DishesPage = () => {
             
             {/* Fuzzy Search Results */}
             {searchResults.length > 0 && (
-              <div className="absolute top-14 left-0 w-full mt-2 bg-white rounded-xl border border-slate-100 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] overflow-hidden">
+              <div
+                className="absolute top-14 left-0 w-full mt-2 bg-white rounded-xl border border-slate-100 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] overflow-hidden"
+                onMouseLeave={() => setSearchResults([])}
+              >
                 <div className="p-3 bg-slate-50 border-b border-slate-100 font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">
                   Similar known recipes
                 </div>
@@ -287,7 +305,8 @@ const DishesPage = () => {
       </form>
 
       {/* Floating Notifications */}
-      <div className="fixed top-8 left-1/2 -translate-x-1/2 flex flex-col gap-4 pointer-events-none z-[100] w-full max-w-md px-4">
+      <div className="fixed top-6 right-4 left-4 md:left-auto md:right-6 flex justify-end pointer-events-none z-[100]">
+        <div className="flex w-full max-w-md flex-col gap-4">
         {error && (
           <div className="bg-white px-6 py-4 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border-l-4 border-[var(--color-primary)] animate-in fade-in slide-in-from-top-4 pointer-events-auto w-full relative">
             <button 
@@ -311,6 +330,7 @@ const DishesPage = () => {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
