@@ -61,13 +61,11 @@ export const AuthProvider = ({ children }) => {
     await apiClient.post('/auth/register', userData);
   };
 
-  const logout = async () => {
+  const logout = () => {
     if (refreshToken) {
-      try {
-        await apiClient.post('/auth/logout', { refresh_token: refreshToken });
-      } catch (err) {
+      apiClient.post('/auth/logout', { refresh_token: refreshToken }).catch(err => {
         console.error("Logout request failed:", err);
-      }
+      });
     }
     localStorage.removeItem('jwt');
     localStorage.removeItem('refresh_token');
