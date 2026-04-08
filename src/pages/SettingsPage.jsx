@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getMyHousehold, updateMyHousehold, getHouseholdMembers, joinHousehold } from "../api/services";
+import { getMyHousehold, updateMyHousehold, getHouseholdMembers, joinHousehold, removeHouseholdMember, leaveHousehold } from "../api/services";
 import useAuth from "../hooks/useAuth";
 
 const parseCsvList = (value) =>
@@ -85,6 +85,27 @@ const SettingsPage = () => {
       setJoinStatus(err.response?.data?.detail || "Invalid invite code.");
     } finally {
       setJoining(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberId) => {
+    if (!window.confirm("Are you sure you want to remove this member?")) return;
+    try {
+      await removeHouseholdMember(memberId);
+      const { data } = await getHouseholdMembers();
+      setMembers(data);
+    } catch (err) {
+      alert("Failed to remove member.");
+    }
+  };
+
+  const handleLeave = async () => {
+    if (!window.confirm("Are you sure you want to leave this household?")) return;
+    try {
+      await leaveHousehold();
+      window.location.reload();
+    } catch (err) {
+      alert("Failed to leave household.");
     }
   };
 
@@ -429,16 +450,33 @@ const SettingsPage = () => {
 
             {/* Members List */}
             <div className="border-t border-slate-100 pt-6 flex flex-col gap-4 relative z-10">
-              <label className="font-display font-bold text-sm text-text-main opacity-80 uppercase tracking-wide">Kitchen Members ({members.length})</label>
+              <div className="flex justify-between items-center">
+                <label className="font-display font-bold text-sm text-text-main opacity-80 uppercase tracking-wide">Kitchen Members ({members.length})</label>
+                {!isAdmin && (
+                  <button type="button" onClick={handleLeave} className="text-xs font-bold text-[var(--color-primary)] hover:underline uppercase tracking-wide">
+                    Leave Household
+                  </button>
+                )}
+              </div>
               <div className="flex flex-wrap gap-3">
                 {members.map(member => (
-                  <div key={member.id} className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-full border border-slate-100 group">
+                  <div key={member.id} className="flex items-center gap-3 bg-slate-50 pl-4 pr-2 py-2 rounded-full border border-slate-100 group">
                     <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-bold text-[var(--color-text-main)] group-hover:bg-[var(--color-secondary-light)] transition-colors">
                       {member.username.charAt(0).toUpperCase()}
                     </div>
                     <span className="font-sans text-sm font-bold text-[var(--color-text-main)]">{member.email}</span>
                     {member.id === household.admin_id && (
-                      <span className="bg-[var(--color-accent-light)] text-[var(--color-accent)] px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-tighter">Admin</span>
+                      <span className="bg-[var(--color-accent-light)] text-[var(--color-accent)] px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-tighter mr-2">Admin</span>
+                    )}
+                    {isAdmin && member.id !== user.id && (
+                      <button 
+                        type="button"
+                        onClick={() => handleRemoveMember(member.id)}
+                        className="text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] w-6 h-6 rounded-full flex items-center justify-center transition-colors"
+                        title="Remove member"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
                     )}
                   </div>
                 ))}

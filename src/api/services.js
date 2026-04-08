@@ -38,6 +38,14 @@ export const joinHousehold = (inviteCode) => {
   return apiClient.post("/households/join", { invite_code: inviteCode });
 };
 
+export const removeHouseholdMember = (memberId) => {
+  return apiClient.delete(`/households/me/members/${memberId}`);
+};
+
+export const leaveHousehold = () => {
+  return apiClient.post("/households/me/leave");
+};
+
 // Recommendations
 export const getRecommendations = (mealType) => {
   return apiClient.get("/recommend/", {
