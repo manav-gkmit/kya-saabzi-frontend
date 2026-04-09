@@ -33,6 +33,8 @@ const CooklogPage = () => {
       } else {
         setHasMore(true);
       }
+      
+      setPage(currentPage);
     } catch (err) {
       setError("Failed to fetch past recipes.");
     } finally {
@@ -46,7 +48,6 @@ const CooklogPage = () => {
 
   const handleLoadMore = () => {
     const nextPage = page + 1;
-    setPage(nextPage);
     fetchCooklogs(nextPage, false);
   };
 
