@@ -137,7 +137,7 @@ const CooklogPage = () => {
         )}
       </div>
 
-      {hasMore && cooklogs.length > 0 && !loading && (
+      {hasMore && !loading && (
         <div className="flex justify-center mt-8">
           <button
             onClick={handleLoadMore}
