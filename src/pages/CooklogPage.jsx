@@ -5,24 +5,50 @@ const CooklogPage = () => {
   const [cooklogs, setCooklogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+
+  const fetchCooklogs = async (currentPage, isInitial = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const limit = 10;
+      const { data } = await getMyCooklogs(limit, currentPage * limit);
+      
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const activeCooklogs = data.filter((log) => !log.deleted_at);
+      const recentCooklogs = activeCooklogs.filter(log => new Date(log.created_at) >= thirtyDaysAgo);
+      
+      if (isInitial) {
+        setCooklogs(recentCooklogs);
+      } else {
+        setCooklogs(prev => [...prev, ...recentCooklogs]);
+      }
+      
+      const latestFetchedLog = data[data.length - 1];
+      if (data.length < limit || (latestFetchedLog && new Date(latestFetchedLog.created_at) < thirtyDaysAgo)) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
+    } catch (err) {
+      setError("Failed to fetch past recipes.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchCooklogs = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const { data } = await getMyCooklogs();
-        const activeCooklogs = data.filter((log) => !log.deleted_at);
-        setCooklogs(activeCooklogs);
-      } catch (err) {
-        setError("Failed to fetch past recipes.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCooklogs();
+    fetchCooklogs(0, true);
   }, []);
+
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchCooklogs(nextPage, false);
+  };
 
   const handleDeleteCooklog = async (cooklogId) => {
     try {
@@ -62,7 +88,7 @@ const CooklogPage = () => {
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {!loading && cooklogs.length > 0 ? (
+        {cooklogs.length > 0 ? (
           cooklogs.map((log, index) => (
             <div
               key={log.id}
@@ -110,6 +136,17 @@ const CooklogPage = () => {
           </div>
         )}
       </div>
+
+      {hasMore && cooklogs.length > 0 && !loading && (
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={handleLoadMore}
+            className="px-6 py-3 bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dark)] transition-colors rounded-xl font-bold font-sans shadow-md"
+          >
+            Load Older Recipes
+          </button>
+        </div>
+      )}
     </div>
   );
 };

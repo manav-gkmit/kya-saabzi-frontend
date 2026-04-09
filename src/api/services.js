@@ -13,8 +13,8 @@ export const searchDishes = (q, signal) => {
 };
 
 // Cooklogs
-export const getMyCooklogs = () => {
-  return apiClient.get("/cooklogs/");
+export const getMyCooklogs = (limit = 10, offset = 0) => {
+  return apiClient.get("/cooklogs/", { params: { limit, offset } });
 };
 
 export const deleteCooklog = (cooklogId) => {
