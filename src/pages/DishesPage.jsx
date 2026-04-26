@@ -14,6 +14,7 @@ const DishesPage = () => {
     dish_type: "veg",
     prep_time_minutes: "",
     calories_estimate: "",
+    ingredients: "",
   });
 
   const [searchResults, setSearchResults] = useState([]);
@@ -99,7 +100,8 @@ const DishesPage = () => {
         ...formData,
         name: trimmedName,
         prep_time_minutes: formData.prep_time_minutes === "" ? null : Number(formData.prep_time_minutes),
-        calories_estimate: formData.calories_estimate === "" ? null : Number(formData.calories_estimate)
+        calories_estimate: formData.calories_estimate === "" ? null : Number(formData.calories_estimate),
+        ingredients: formData.ingredients ? formData.ingredients.split(",").map(i => i.trim()).filter(Boolean) : null,
       };
       await addDish(payload);
       setSuccessMessage(`Added successfully: ${trimmedName}`);
@@ -112,6 +114,7 @@ const DishesPage = () => {
         dish_type: "veg",
         prep_time_minutes: "",
         calories_estimate: "",
+        ingredients: "",
       });
       setSearchResults([]);
       setTimeout(() => setSuccessMessage(""), 4000);
@@ -301,6 +304,17 @@ const DishesPage = () => {
                  className="input-soft text-xl font-bold"
                />
             </div>
+          </div>
+          
+          <div className="mt-4">
+            <label className="font-display font-bold text-sm text-text-main opacity-80 uppercase tracking-wide block mb-3">Ingredients (comma separated)</label>
+            <input
+              type="text"
+              placeholder="e.g. spinach, paneer, garlic"
+              value={formData.ingredients}
+              onChange={(e) => updateField("ingredients", e.target.value)}
+              className="input-soft"
+            />
           </div>
           
           <div className="mt-4">
