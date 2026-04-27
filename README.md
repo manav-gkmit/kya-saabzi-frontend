@@ -51,7 +51,7 @@ Follow these steps to set up and run the frontend locally.
 ### 2. Installation
 ```bash
 # Clone the repository
-git clone https://github.com/manav-gkmit/kya-saabzi-frontend.git
+git clone https://github.com/manav-sh1/kya-saabzi-frontend.git
 cd kya-saabzi-frontend
 
 # Install dependencies
